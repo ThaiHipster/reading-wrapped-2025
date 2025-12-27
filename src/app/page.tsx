@@ -1,7 +1,8 @@
 "use client";
 
-import { books2025, calculateStats } from "@/data/books";
+import { books2025, calculateStats, getGenreIcon } from "@/data/books";
 import { useState } from "react";
+import BookCoverImage from "@/components/BookCoverImage";
 
 export default function Home() {
   const stats = calculateStats(books2025);
@@ -32,33 +33,37 @@ export default function Home() {
         </div>
       ),
     },
-    // Slide 2: Five Star Books
+    // Slide 2: Favorites Count
     {
       bg: "from-yellow-500 via-amber-500 to-orange-500",
       content: (
         <div className="flex flex-col items-center justify-center text-center">
-          <p className="text-xl opacity-80 mb-2">You gave</p>
-          <h1 className="text-8xl md:text-9xl font-black">{stats.fiveStarCount}</h1>
-          <h2 className="text-3xl md:text-4xl font-bold">five-star ratings</h2>
-          <div className="text-5xl mt-4">★★★★★</div>
+          <p className="text-xl opacity-80 mb-2">You marked</p>
+          <h1 className="text-8xl md:text-9xl font-black">{stats.favoritesCount}</h1>
+          <h2 className="text-3xl md:text-4xl font-bold">favorites</h2>
+          <div className="text-5xl mt-4">❤️</div>
           <p className="mt-4 text-lg opacity-70">
-            {Math.round((stats.fiveStarCount / stats.totalBooks) * 100)}% of your reads were incredible
+            The books that truly hit different
           </p>
         </div>
       ),
     },
-    // Slide 3: Top Genre
+    // Slide 3: Top Genre with Icons
     {
       bg: "from-rose-500 via-pink-500 to-fuchsia-500",
       content: (
         <div className="flex flex-col items-center justify-center text-center">
           <p className="text-xl opacity-80 mb-2">Your top genre was</p>
-          <h1 className="text-4xl md:text-6xl font-black mb-4">{stats.topGenre}</h1>
+          <h1 className="text-4xl md:text-6xl font-black mb-2">
+            <span className="mr-3">{getGenreIcon(stats.topGenre)}</span>
+            {stats.topGenre}
+          </h1>
           <p className="text-2xl opacity-90">{stats.genreCounts[stats.topGenre]} books</p>
           <div className="mt-6 space-y-2 text-left">
             {stats.topGenres.slice(0, 5).map(([genre, count], i) => (
               <div key={genre} className="flex items-center gap-3">
                 <span className="text-lg opacity-70">#{i + 1}</span>
+                <span className="text-xl">{getGenreIcon(genre)}</span>
                 <span className="font-medium">{genre}</span>
                 <span className="opacity-70">({count})</span>
               </div>
@@ -107,47 +112,37 @@ export default function Home() {
           </div>
           <div className="mt-8">
             <h1 className="text-6xl font-black">{stats.fanficCount}</h1>
-            <p className="text-lg opacity-70">Fanfics</p>
+            <p className="text-lg opacity-70">Fanfics ✨</p>
             <p className="text-sm opacity-50">Including a 650k word monster</p>
           </div>
         </div>
       ),
     },
-    // Slide 6: Average Rating
-    {
-      bg: "from-violet-600 via-purple-500 to-indigo-500",
-      content: (
-        <div className="flex flex-col items-center justify-center text-center">
-          <p className="text-xl opacity-80 mb-2">Your average rating</p>
-          <h1 className="text-8xl md:text-9xl font-black">
-            {stats.avgRating.toFixed(1)}
-          </h1>
-          <div className="text-4xl mt-2">
-            {"★".repeat(Math.round(stats.avgRating))}
-            {"☆".repeat(5 - Math.round(stats.avgRating))}
-          </div>
-          <p className="mt-4 text-lg opacity-70">You know what you like</p>
-        </div>
-      ),
-    },
-    // Slide 7: Favorites - Fiction
+    // Slide 6: Favorites - Fiction
     {
       bg: "from-red-600 via-rose-500 to-pink-500",
       content: (
-        <div className="flex flex-col items-center justify-center text-center">
+        <div className="flex flex-col items-center justify-center text-center overflow-y-auto max-h-[85vh]">
           <p className="text-xl opacity-80 mb-4">Your favorite fiction</p>
           <div className="space-y-3 text-left max-w-md">
-            {stats.favorites.filter(b => !b.genre.includes("Non-Fiction")).slice(0, 8).map((book, i) => (
-              <div key={i} className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-                <p className="font-bold">{book.title}</p>
-                <p className="text-sm opacity-70">{book.author} • {book.genre}</p>
+            {stats.favorites.filter(b => b.genre !== "Non-Fiction").slice(0, 10).map((book, i) => (
+              <div key={i} className="bg-white/10 rounded-lg p-3 backdrop-blur-sm flex gap-3 items-center">
+                <BookCoverImage
+                  title={book.title}
+                  author={book.author}
+                  fallbackIcon={getGenreIcon(book.genre)}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold truncate">{book.title}</p>
+                  <p className="text-sm opacity-70">{book.author}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       ),
     },
-    // Slide 8: Favorites - Non-Fiction
+    // Slide 7: Favorites - Non-Fiction
     {
       bg: "from-cyan-600 via-teal-500 to-emerald-500",
       content: (
@@ -155,70 +150,67 @@ export default function Home() {
           <p className="text-xl opacity-80 mb-4">Your favorite non-fiction</p>
           <div className="space-y-3 text-left max-w-md">
             {stats.favorites.filter(b => b.genre === "Non-Fiction").map((book, i) => (
-              <div key={i} className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-                <p className="font-bold">{book.title}</p>
-                <p className="text-sm opacity-70">{book.author}</p>
+              <div key={i} className="bg-white/10 rounded-lg p-3 backdrop-blur-sm flex gap-3 items-center">
+                <BookCoverImage
+                  title={book.title}
+                  author={book.author}
+                  fallbackIcon="📚"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold truncate">{book.title}</p>
+                  <p className="text-sm opacity-70">{book.author}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       ),
     },
-    // Slide 9: Series Achievements
+    // Slide 8: Series Conquered (Dynamic)
     {
       bg: "from-amber-600 via-orange-500 to-red-500",
       content: (
         <div className="flex flex-col items-center justify-center text-center">
-          <p className="text-xl opacity-80 mb-4">Series conquered</p>
-          <div className="space-y-4 text-left">
-            <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-              <p className="font-bold">Alex Verus</p>
-              <p className="text-sm opacity-70">12 books • Benedict Jacka</p>
-            </div>
-            <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-              <p className="font-bold">Murderbot Diaries</p>
-              <p className="text-sm opacity-70">7 books • Martha Wells</p>
-            </div>
-            <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-              <p className="font-bold">All For The Game</p>
-              <p className="text-sm opacity-70">3 books in 20 hours • Nora Sakavic</p>
-            </div>
-            <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-              <p className="font-bold">Cosmere (Sanderson)</p>
-              <p className="text-sm opacity-70">8+ books • Brandon Sanderson</p>
-            </div>
+          <p className="text-xl opacity-80 mb-4">📚 Series conquered</p>
+          <div className="space-y-3 text-left max-w-md">
+            {stats.topSeries.slice(0, 6).map((series, i) => (
+              <div key={i} className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                <p className="font-bold">{series.name}</p>
+                <p className="text-sm opacity-70">{series.count} books • {series.author}</p>
+              </div>
+            ))}
           </div>
         </div>
       ),
     },
-    // Slide 10: Reading Achievements
+    // Slide 9: Reading Achievements
     {
       bg: "from-fuchsia-600 via-pink-500 to-rose-500",
       content: (
         <div className="flex flex-col items-center justify-center text-center">
-          <p className="text-xl opacity-80 mb-6">Achievement Unlocked</p>
+          <p className="text-xl opacity-80 mb-6">🏆 Achievement Unlocked</p>
           <div className="space-y-4 text-left max-w-md">
             <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-              <p className="font-bold">Speed Demon</p>
+              <p className="font-bold">⚡ Speed Demon</p>
               <p className="text-sm opacity-70">All For The Game: 3 books in 20 hours</p>
             </div>
             <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-              <p className="font-bold">Marathon Reader</p>
+              <p className="font-bold">📖 Marathon Reader</p>
               <p className="text-sm opacity-70">Kill Your Darlings: 300k words in &lt;24 hours</p>
             </div>
             <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-              <p className="font-bold">Emotional Damage</p>
+              <p className="font-bold">😭 Emotional Damage</p>
               <p className="text-sm opacity-70">Atmosphere, My Sister&apos;s Keeper, My Friends</p>
             </div>
             <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-              <p className="font-bold">Classic Conqueror</p>
+              <p className="font-bold">📜 Classic Conqueror</p>
               <p className="text-sm opacity-70">Count of Monte Cristo, Rebecca, P&P</p>
             </div>
           </div>
         </div>
       ),
     },
-    // Slide 11: Final Stats Summary
+    // Slide 10: Final Stats Summary
     {
       bg: "from-slate-800 via-slate-700 to-slate-900",
       content: (
@@ -230,27 +222,27 @@ export default function Home() {
               <p className="text-sm opacity-70">Books finished</p>
             </div>
             <div>
-              <p className="text-4xl font-black">{stats.fiveStarCount}</p>
-              <p className="text-sm opacity-70">5-star reads</p>
-            </div>
-            <div>
-              <p className="text-4xl font-black">{stats.favorites.length}</p>
-              <p className="text-sm opacity-70">All-time favorites</p>
+              <p className="text-4xl font-black">{stats.favoritesCount}</p>
+              <p className="text-sm opacity-70">❤️ Favorites</p>
             </div>
             <div>
               <p className="text-4xl font-black">{Object.keys(stats.genreCounts).length}</p>
               <p className="text-sm opacity-70">Genres explored</p>
             </div>
             <div>
+              <p className="text-4xl font-black">{stats.topSeries.length}</p>
+              <p className="text-sm opacity-70">Series conquered</p>
+            </div>
+            <div>
               <p className="text-4xl font-black">{stats.dnfCount}</p>
               <p className="text-sm opacity-70">DNFs (no shame)</p>
             </div>
             <div>
-              <p className="text-4xl font-black">{stats.avgRating.toFixed(1)}</p>
-              <p className="text-sm opacity-70">Avg rating</p>
+              <p className="text-4xl font-black">{stats.fanficCount}</p>
+              <p className="text-sm opacity-70">✨ Fanfics</p>
             </div>
           </div>
-          <p className="mt-8 text-lg opacity-70">Here&apos;s to another year of reading</p>
+          <p className="mt-8 text-lg opacity-70">Here&apos;s to another year of reading 📚</p>
         </div>
       ),
     },
